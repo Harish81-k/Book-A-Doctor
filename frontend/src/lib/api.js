@@ -27,4 +27,32 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor to dynamically fix old database records that have hardcoded localhost URLs
+api.interceptors.response.use(
+  (response) => {
+    if (response.data) {
+      const backendBaseUrl = apiUrl.replace(/\/api$/, '');
+      const fixUrls = (obj) => {
+        if (typeof obj === 'string') {
+          return obj.replace('http://localhost:5000', backendBaseUrl);
+        }
+        if (Array.isArray(obj)) {
+          return obj.map(fixUrls);
+        }
+        if (obj !== null && typeof obj === 'object') {
+          Object.keys(obj).forEach((key) => {
+            obj[key] = fixUrls(obj[key]);
+          });
+        }
+        return obj;
+      };
+      response.data = fixUrls(response.data);
+    }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export default api;
