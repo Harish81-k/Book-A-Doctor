@@ -1,10 +1,11 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Stethoscope, Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react'
 
 export default function RegisterPage() {
-  const { signUp } = useAuth()
+  const navigate = useNavigate()
+  const { signUp, isAuthenticated, user } = useAuth()
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -16,6 +17,14 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === 'admin') navigate('/admin')
+      else if (user.role === 'doctor') navigate('/doctor-dashboard')
+      else navigate('/dashboard')
+    }
+  }, [isAuthenticated, user, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -31,6 +40,7 @@ export default function RegisterPage() {
     setIsLoading(true)
     try {
       await signUp(form.email, form.password, form.role, form.firstName, form.lastName)
+      // The useEffect will handle the redirect once AuthContext updates
     } catch (err) {
       setError(err.message || 'Registration failed')
     } finally {
