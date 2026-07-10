@@ -33,14 +33,16 @@ const upload = multer({
 });
 
 router.post('/report', upload.single('report'), (req, res) => {
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
   res.json({
-    url: `http://localhost:5000/uploads/${req.file.filename}`,
+    url: `${protocol}://${req.get('host')}/uploads/${req.file.filename}`,
   });
 });
 
 router.post('/avatar', upload.single('avatar'), (req, res) => {
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
   res.json({
-    avatar_url: `http://localhost:5000/uploads/${req.file.filename}`,
+    avatar_url: `${protocol}://${req.get('host')}/uploads/${req.file.filename}`,
   });
 });
 
