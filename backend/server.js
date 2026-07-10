@@ -32,17 +32,24 @@ app.use(compression());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // CORS Configuration
-const allowedOrigins = process.env.FRONTEND_URL 
-  ? [process.env.FRONTEND_URL, 'http://localhost:5173']
+let frontendUrl = process.env.FRONTEND_URL;
+if (frontendUrl) {
+  // Remove trailing slash if user accidentally added one
+  frontendUrl = frontendUrl.replace(/\/$/, '');
+}
+
+const allowedOrigins = frontendUrl 
+  ? [frontendUrl, 'http://localhost:5173']
   : ['http://localhost:5173'];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      console.warn(`CORS blocked request from origin: ${origin}`);
+      // Returning false instead of an Error prevents a 500 crash and correctly lets the browser handle the CORS block
+      callback(null, false);
     }
   },
   credentials: true,
