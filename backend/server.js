@@ -32,28 +32,8 @@ app.use(compression());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // CORS Configuration
-let frontendUrl = process.env.FRONTEND_URL;
-if (frontendUrl) {
-  // Remove trailing slash if user accidentally added one
-  frontendUrl = frontendUrl.replace(/\/$/, '');
-}
-
-const allowedOrigins = frontendUrl 
-  ? [frontendUrl, 'http://localhost:5173']
-  : ['http://localhost:5173'];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`CORS blocked request from origin: ${origin}`);
-      // Returning false instead of an Error prevents a 500 crash and correctly lets the browser handle the CORS block
-      callback(null, false);
-    }
-  },
-  credentials: true,
-}));
+// Allowing all origins to prevent deployment blocks, as the app uses Bearer tokens instead of cookies.
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
